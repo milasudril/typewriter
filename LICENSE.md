@@ -1,3 +1,6 @@
+In addition to the below license, the samples wave files distributed together with this project are licensed under 2-clause BSD license.
+
+
 GNU GENERAL PUBLIC LICENSE
                        Version 3, 29 June 2007
 
