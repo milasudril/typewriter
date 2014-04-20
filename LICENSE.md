@@ -1,4 +1,4 @@
-In addition to the below license, the samples wave files distributed together with this project are licensed under 2-clause BSD license.
+This license description only covers program source code. The samples wave files distributed together with this project are licensed under the 2-clause BSD license.
 
 
 GNU GENERAL PUBLIC LICENSE
