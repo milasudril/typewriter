@@ -6,7 +6,7 @@ config_set
 			[
 			herbarium
 				[
-				name[jacktype]
+				name[typewriter]
 				authors[Torbjörn^ Rathsman]
 				]
 			paths
