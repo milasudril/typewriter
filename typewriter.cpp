@@ -3,7 +3,8 @@ target[type[application]name[typewriter]platform[;GNU/Linux]]
 #endif
 
 #include <mustudio/client.h>
-#include <mustudio/port_midi.h>
+#include <mustudio/midi_input_exported.h>
+#include <mustudio/midi_output_exported.h>
 #include <herbs/event/event.h>
 
 #include <cstdio>
@@ -17,14 +18,14 @@ class Typewriter:public MuStudio::Client
 		struct EventQueued
 			{
 			size_t delay;
-			MuStudio::PortMIDI::Message msg;
+			MuStudio::MIDI::Message msg;
 			bool valid;
 			};
 
 		Typewriter(Herbs::Event& trigg):Client("Typewriter")
 			,m_trigg(trigg)
-			,midi_in(*this,"Trigger in",MuStudio::Port::PORT_IS_INPUT)
-			,midi_out(*this,"MIDI out",MuStudio::Port::PORT_IS_OUTPUT)
+			,midi_in(*this,"Trigger in")
+			,midi_out(*this,"MIDI out")
 			,event_next{0,{0,0,0,0},0},pos(0)
 			{
 			activate();
@@ -37,7 +38,7 @@ class Typewriter:public MuStudio::Client
 		
 		int onProcess(size_t n_frames)
 			{
-			MuStudio::PortMIDI::Event trigg_in;
+			MuStudio::MIDI::Event trigg_in;
 			bool event_has=midi_in.eventFirstGet(trigg_in,n_frames);
 
 			midi_out.messageWritePrepare(n_frames);
@@ -104,8 +105,8 @@ class Typewriter:public MuStudio::Client
 		
 	private:
 		Herbs::Event& m_trigg;
-		MuStudio::PortMIDI midi_in;
-		MuStudio::PortMIDI midi_out;
+		MuStudio::MIDI::InputExported midi_in;
+		MuStudio::MIDI::OutputExported midi_out;
 		std::deque<EventQueued> events_in;
 		EventQueued event_next;
 		size_t pos;
