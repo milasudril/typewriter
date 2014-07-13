@@ -5,6 +5,7 @@ target[type[application]name[typewriter]platform[;GNU/Linux]]
 #include <mustudio/client.h>
 #include <mustudio/midi_input_exported.h>
 #include <mustudio/midi_output_exported.h>
+#include <mustudio/midi_event.h>
 #include <herbs/event/event.h>
 
 #include <cstdio>
@@ -17,8 +18,7 @@ class Typewriter:public MuStudio::Client
 	public:
 		struct EventQueued
 			{
-			size_t delay;
-			MuStudio::MIDI::Message msg;
+			MuStudio::MIDI::Event event;
 			bool valid;
 			};
 
@@ -26,7 +26,7 @@ class Typewriter:public MuStudio::Client
 			,m_trigg(trigg)
 			,midi_in(*this,"Trigger in")
 			,midi_out(*this,"MIDI out")
-			,event_next{0,{0,0,0,0},0},pos(0)
+			,event_next{{0,0,{0}},0},pos(0)
 			{
 			activate();
 			}
@@ -48,9 +48,9 @@ class Typewriter:public MuStudio::Client
 				if(event_has && trigg_in.time==now)
 					{
 					//Watch for "note on" message on any channel
-					if((trigg_in.data.byte_0&0xf0) == 0x90)
+					if((trigg_in.data.bytes[0]&0xf0) == 0x90)
 						{
-						switch(trigg_in.data.byte_1)
+						switch(trigg_in.data.bytes[1])
 							{
 						//TODO: configurable trigger!
 							case 64:
@@ -67,11 +67,11 @@ class Typewriter:public MuStudio::Client
 					event_has=midi_in.eventNextGet(trigg_in);
 					}
 					
-				if(pos>=event_next.delay)
+				if(pos>=event_next.event.time)
 					{
 					if(event_next.valid)
 						{
-						midi_out.messageWrite(event_next.msg);
+						midi_out.messageWrite(event_next.event);
 						event_next.valid=0;
 						pos=0;
 						}
@@ -80,9 +80,9 @@ class Typewriter:public MuStudio::Client
 						event_next=events_in.front();
 						event_next.valid=1;
 						events_in.pop_front();
-						if(event_next.delay==0)
+						if(event_next.event.time==0)
 							{
-							midi_out.messageWrite(event_next.msg);
+							midi_out.messageWrite(event_next.event);
 							event_next.valid=0;
 							}
 						else
@@ -150,7 +150,7 @@ int main(int argc,char* argv[])
 			{
 			col_count=0;
 			margin_state=1;
-			output.eventSend({0,{0x99,39,127,0},1});
+			output.eventSend({0,0,{0x99,39,127,0,0,0,0,0},1});
 			}
 		switch(ch_in)
 			{
@@ -210,7 +210,7 @@ int main(int argc,char* argv[])
 			double r_temp=0.5*(U_t(twister)+r_prev);
 			r_prev=r_temp;
 			size_t delay_real=size_t(48000*(r_temp+delay_prev));
-			output.eventSend({delay_real,{0x99,note,uint8_t(127*v_0),0},1});
+			output.eventSend({uint32_t(delay_real),0,{0x99,note,uint8_t(127*v_0),0,0,0,0,0},1});
 			}
 
 		delay_prev=delay;
