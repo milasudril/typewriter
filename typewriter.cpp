@@ -26,16 +26,16 @@ class Typewriter:public MuStudio::Client
 			,m_trigg(trigg)
 			,midi_in(*this,"Trigger in")
 			,midi_out(*this,"MIDI out")
-			,event_next{{0,0,{0}},0},pos(0)
+			,event_next{{0,{0}},0},pos(0)
 			{
 			activate();
 			}
-		
+
 		void eventSend(const EventQueued& event)
 			{
 			events_in.push_back(event);
 			}
-		
+
 		int onProcess(size_t n_frames)
 			{
 			MuStudio::MIDI::Event trigg_in;
@@ -66,7 +66,7 @@ class Typewriter:public MuStudio::Client
 						}
 					event_has=midi_in.eventNextGet(trigg_in);
 					}
-					
+
 				if(pos>=event_next.event.time)
 					{
 					if(event_next.valid)
@@ -95,14 +95,14 @@ class Typewriter:public MuStudio::Client
 				}
 			return 0;
 			}
-		
+
 		~Typewriter()
 			{
 			deactivate();
 			}
-		
-		
-		
+
+
+
 	private:
 		Herbs::Event& m_trigg;
 		MuStudio::MIDI::InputExported midi_in;
@@ -111,10 +111,10 @@ class Typewriter:public MuStudio::Client
 		EventQueued event_next;
 		size_t pos;
 	};
-	
+
 void errlog(const char* message)
 	{fprintf(stderr,"%s\n",message);}
-	
+
 
 int main(int argc,char* argv[])
 	{
@@ -140,7 +140,7 @@ int main(int argc,char* argv[])
 	if(src==NULL)
 		{
 		perror("fopen");
-		return -1;	
+		return -1;
 		}
 	trigger.wait();
 	while((ch_in=getc(src))!=EOF)
@@ -150,7 +150,7 @@ int main(int argc,char* argv[])
 			{
 			col_count=0;
 			margin_state=1;
-			output.eventSend({0,0,{0x99,39,127,0,0,0,0,0},1});
+			output.eventSend({0,{0x99,39,127,0},1});
 			}
 		switch(ch_in)
 			{
@@ -204,18 +204,18 @@ int main(int argc,char* argv[])
 					{++col_count;}
 				putchar(ch_in);
 			}
-	
+
 		if(note)
 			{
 			double r_temp=0.5*(U_t(twister)+r_prev);
 			r_prev=r_temp;
 			size_t delay_real=size_t(48000*(r_temp+delay_prev));
-			output.eventSend({uint32_t(delay_real),0,{0x99,note,uint8_t(127*v_0),0,0,0,0,0},1});
+			output.eventSend({uint32_t(delay_real),{0x99,note,uint8_t(127*v_0),0},1});
 			}
 
 		delay_prev=delay;
 		}
-	
+
 	trigger.wait();
 
 	return 0;
